@@ -1,0 +1,12 @@
+python
+import requests
+
+url = 'http://localhost:8000/predict/'
+data = {
+    "feature1": 1.2,
+    "feature2": 3.4,
+    "feature3": 5.6
+}
+
+response = requests.post(url, json=data)
+print(response.json())
