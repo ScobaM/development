@@ -1,0 +1,44 @@
+from fastapi import FastAPI
+from pydantic import BaseModel
+import joblib
+from fastapi.openapi.utils import get_openapi
+
+# Загрузка предварительно обученной модели
+model = joblib.load('trained_model.pkl')
+
+class Item(BaseModel):
+    feature1: float
+    feature2: float
+    feature3: float
+
+app = FastAPI()
+
+@app.post("/predict/")
+def predict(item: Item):
+    """
+    Получить прогноз на основе предоставленных признаков.
+
+    :param item: Признаки для предсказания.
+    :return: Предсказанное значение.
+    """
+    features = [item.feature1, item.feature2, item.feature3]
+    prediction = model.predict([features])[0]
+    return {"prediction": prediction}
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title="Machine Learning Predictions API",
+        version="0.1.0",
+        description="API для предсказания значений на основе обученной модели машинного обучения.",
+        routes=app.routes,
+    )
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
+
+if name == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
